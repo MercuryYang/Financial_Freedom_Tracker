@@ -1,6 +1,6 @@
 # 财富自由之路 (Financial Freedom Tracker) — 项目施工文档
 
-> 版本：v1.1 · 日期：2026-11-18
+> 版本：v1.2 · 日期：2026-11-18
 > 状态：首版已实现并通过验收（2026-11-18 用户确认施工）
 
 ---
@@ -30,7 +30,7 @@
 
 - 技术栈：React (Vite) + FastAPI + SQLite
 - 部署：Docker Compose，无登录
-- 货币：多币种录入，自动拉取汇率（每日缓存），汇总统一折算 CNY
+- 货币：仅人民币（CNY）与美元（USD）录入，自动拉取美元汇率（每日缓存），汇总统一折算 CNY
 - 投资现价：手动更新，架构预留后续接行情 API
 
 ---
@@ -196,7 +196,7 @@ erDiagram
 - **支出分类**：餐饮 food / 住房 housing / 交通 transport / 购物 shopping / 娱乐 entertainment / 医疗 medical / 教育 education / 其他 other
 - **资产类别**：现金 cash / 活期 checking / 定期 term_deposit / 房产 real_estate / 其他 other（投资类资产一律走投资 Tracker）
 - **资产类型（投资）**：股票 stock / ETF etf / 基金 fund / 加密货币 crypto / 债券 bond / 其他 other
-- **币种**：CNY, USD, EUR, HKD, JPY, GBP, SGD, AUD, CAD, CHF, KRW（前端下拉选择，后端校验）
+- **币种**：仅人民币 CNY、美元 USD（前端下拉选择，后端校验）
 
 ### 4.3 关键设计决策
 
@@ -337,7 +337,7 @@ REST，前缀 `/api`。错误统一 `{detail: string}`（FastAPI 默认）。金
 ```
 请求需要折算 → ensure_rates_fresh()
   → 查 exchange_rates.fetched_at，若 < 24h 直接用缓存
-  → 否则 httpx GET https://api.frankfurter.app/latest?base=CNY&symbols=USD,EUR,...
+  → 否则 httpx GET https://api.frankfurter.dev/v1/latest?base=CNY&symbols=USD
   → 成功：upsert 全部 rate + fetched_at
   → 失败（网络/超时 5s）：沿用旧缓存，响应带 rates_stale=true，前端在页脚提示「汇率更新于 X」
 ```
@@ -580,11 +580,11 @@ volumes:
 1. 资产账户不含投资类别，投资统一走 Tracker 并入净资产。
 2. 预算统一以 CNY 设置。
 3. Dream 购买反悔需手动删除对应支出并将心愿改回待购。
-4. 使用 CNY/USD/EUR/HKD/JPY/GBP/SGD/AUD/CAD/CHF/KRW 十一种币种。
+4. 按后续确认，仅使用人民币 CNY 和美元 USD 两种币种。
 
 ## 14. 实现与验收记录
 
-- M1：全部 API、持久化模型、汇率/周期/快照服务及投资计算已实现；36 项后端测试通过。
+- M1：全部 API、持久化模型、汇率/周期/快照服务及投资计算已实现；币种收敛后，原有 36 项及新增 9 项后端测试通过。
 - M2/M3：七个页面和完整交互已实现；13 组浏览器流程通过，桌面及手机布局已检查。
 - M4：Docker 镜像构建、Nginx 代理、SPA 深链接、健康检查和重启后数据持久化通过。
 - M5：README、备份说明及验收文档已完成，代码按里程碑提交至 `main`。

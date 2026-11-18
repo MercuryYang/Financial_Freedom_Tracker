@@ -25,7 +25,7 @@ def test_rounding_uses_half_up_and_supports_valid_large_values():
 
 @pytest.mark.parametrize('bad_payload', [
     {'base': 'USD', 'date': '2026-11-18', 'rates': {code: 1 for code in CURRENCIES[1:]}},
-    {'base': 'CNY', 'rates': {'USD': 1}},
+    {'base': 'CNY', 'rates': {}},
     {'base': 'CNY', 'rates': {code: 0 for code in CURRENCIES[1:]}},
     {'base': 'CNY', 'rates': {code: float('inf') for code in CURRENCIES[1:]}},
     {'base': 'CNY', 'rates': {code: 5e-324 for code in CURRENCIES[1:]}},

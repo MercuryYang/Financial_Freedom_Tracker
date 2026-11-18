@@ -17,6 +17,7 @@
 ## 设计适配
 
 - 遵循当前方案：React 18 + Vite + Recharts，使用纯 CSS 与 CSS variables；后端为 FastAPI + SQLite。
+- 币种仅支持人民币（CNY）和美元（USD），汇总统一折算为人民币。
 - 不因技能示例添加 Tailwind、组件框架或升级 React。UI/UX 技能的 React 数据含较新 API，检索使用 `--stack react` 并注明 `React 18`，仅采用兼容建议。
 - 中文财务仪表盘优先保证金额易读、信息层级和图表可读性；遵循方案中的浅色主题与财务语义色，并以文字或符号辅助表达状态。
 - 自动生成的 `--design-system` 仅作候选建议；检查匹配度，不直接采用与方案不符的营销页结构、深色默认或缺少中文支持的字体。

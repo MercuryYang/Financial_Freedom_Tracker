@@ -12,10 +12,7 @@ from app.main import create_app
 
 def create_test_app():
     # Explicit fixture values make UI conversion assertions independent of markets.
-    cny_rates = {
-        "USD": 7.2, "EUR": 8, "HKD": 0.92, "JPY": 0.05, "GBP": 9.2,
-        "SGD": 5.3, "AUD": 4.7, "CAD": 5.2, "CHF": 8.1, "KRW": 0.005,
-    }
+    cny_rates = {"USD": 7.2}
     fixed_day = date(2026, 11, 18)
     return create_app(
         db_path=os.environ["FFT_E2E_DB_PATH"],

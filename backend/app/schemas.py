@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from .constants import INCOME_CATEGORIES, EXPENSE_CATEGORIES
 
-Currency = Literal['CNY', 'USD', 'EUR', 'HKD', 'JPY', 'GBP', 'SGD', 'AUD', 'CAD', 'CHF', 'KRW']
+Currency = Literal['CNY', 'USD']
 Positive = Annotated[float, Field(gt=0, le=1e15, allow_inf_nan=False)]
 NonNegative = Annotated[float, Field(ge=0, le=1e15, allow_inf_nan=False)]
 Name = Annotated[str, Field(min_length=1, max_length=200)]

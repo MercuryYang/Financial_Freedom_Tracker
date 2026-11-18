@@ -14,7 +14,10 @@ def run_scenarios(page, context, base_url, output):
         expect(page.get_by_role("heading", name=title, exact=True)).to_be_visible()
 
     def field(label):
-        return page.get_by_role("dialog").get_by_label(re.compile("^" + re.escape(label)))
+        control = page.get_by_role("dialog").get_by_label(re.compile("^" + re.escape(label)))
+        if label == "币种":
+            assert control.locator("option").evaluate_all("options => options.map(option => option.value)") == ["CNY", "USD"]
+        return control
 
     def save(label="保存"):
         dialog = page.get_by_role("dialog")
@@ -41,7 +44,7 @@ def run_scenarios(page, context, base_url, output):
     row = page.get_by_role("row").filter(has_text="验收美元工资")
     expect(row).to_contain_text("1,000.00")
     expect(row).to_contain_text("7,200.00")
-    checks.append("浏览器新增 USD 收入，原币和 CNY 折算双显")
+    checks.append("币种仅提供 CNY/USD，浏览器新增 USD 收入并正确折算双显")
 
     page.get_by_role("button", name="记一笔", exact=True).click()
     field("金额").fill("3500")

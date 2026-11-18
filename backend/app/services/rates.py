@@ -25,7 +25,7 @@ def naive_utc(value):
 
 def ensure_rates_fresh(db, state, force=False):
     now = utcnow()
-    rows = list(db.scalars(select(ExchangeRate)))
+    rows = list(db.scalars(select(ExchangeRate).where(ExchangeRate.currency.in_(CURRENCIES[1:]))))
     latest = min((naive_utc(r.fetched_at) for r in rows), default=None)
     complete = all(code in {r.currency for r in rows} for code in CURRENCIES[1:])
     if not force and complete and latest and now - latest < timedelta(hours=24):
@@ -70,7 +70,7 @@ def ensure_rates_fresh(db, state, force=False):
 
 
 def rate_status(db):
-    rows = list(db.scalars(select(ExchangeRate)))
+    rows = list(db.scalars(select(ExchangeRate).where(ExchangeRate.currency.in_(CURRENCIES[1:]))))
     fetched = min((naive_utc(row.fetched_at) for row in rows), default=None)
     complete = all(code in {r.currency for r in rows} for code in CURRENCIES[1:])
     stale = not complete or not fetched or utcnow() - fetched >= timedelta(hours=24)
@@ -80,7 +80,7 @@ def rate_status(db):
 
 
 def currency_payload(db):
-    rows = {row.currency: row for row in db.scalars(select(ExchangeRate))}
+    rows = {row.currency: row for row in db.scalars(select(ExchangeRate).where(ExchangeRate.currency.in_(CURRENCIES[1:])))}
     return {
         'currencies': [
             {'code': code, 'rate': 1.0 if code == 'CNY' else (rows[code].rate if code in rows else None),

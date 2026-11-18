@@ -436,7 +436,10 @@ export const currencyField = {
   name: "currency",
   label: "币种",
   type: "select",
-  options: CURRENCIES,
+  options: CURRENCIES.map((value) => ({
+    value,
+    label: value === "CNY" ? "人民币 · CNY" : "美元 · USD",
+  })),
   required: true,
 };
 export const amountField = (name = "amount", label = "金额") => ({

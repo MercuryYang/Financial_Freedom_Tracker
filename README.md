@@ -2,7 +2,7 @@
 
 个人财务工作台：记录收支、控制预算、追踪存款目标、查看资产与净值、管理心愿清单和投资持仓。
 
-采用 React 18 + Vite + Recharts + 纯 CSS，FastAPI + SQLAlchemy + SQLite。数据保存在本机，应用首次打开为空数据。
+采用 React 18 + Vite + Recharts + 纯 CSS，FastAPI + SQLAlchemy + SQLite。仅支持人民币（CNY）和美元（USD），汇总统一折算为人民币。数据保存在本机，应用首次打开为空数据。
 
 ## Docker 启动
 

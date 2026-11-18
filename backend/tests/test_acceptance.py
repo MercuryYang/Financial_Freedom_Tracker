@@ -12,9 +12,7 @@ from fastapi.testclient import TestClient
 
 
 EXCHANGE_TO_CNY = {
-    "USD": 7.2, "EUR": 8.0, "HKD": 0.92, "JPY": 0.048,
-    "GBP": 9.2, "SGD": 5.3, "AUD": 4.8, "CAD": 5.2,
-    "CHF": 8.1, "KRW": 0.0052,
+    "USD": 7.2,
 }
 
 

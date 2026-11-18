@@ -1,17 +1,5 @@
 import dayjs from "dayjs";
-export const CURRENCIES = [
-  "CNY",
-  "USD",
-  "EUR",
-  "HKD",
-  "JPY",
-  "GBP",
-  "SGD",
-  "AUD",
-  "CAD",
-  "CHF",
-  "KRW",
-];
+export const CURRENCIES = ["CNY", "USD"];
 export const INCOME = {
   salary: "工资",
   bonus: "奖金",
