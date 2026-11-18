@@ -13,6 +13,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      // Keep build artifacts separate from the application's /assets page.
+      assetsDir: "static",
       rollupOptions: {
         output: {
           manualChunks: {
