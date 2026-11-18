@@ -37,14 +37,46 @@ cd backend
 
 2026-11-18：独立验收集 **22 passed**（0.63 秒）。首次执行发现“首次失败请求回滚汇率缓存后，节流状态阻止下一笔有效外币交易”的问题；后端修复后，针对性回归及完整验收集均通过。
 
+加上 `test_core.py` 的算法与边界测试，运行 `backend/.venv/bin/python -m pytest backend/tests -q` 的结果为 **36 passed**。
+
 另对 `0000-01`、`9999-12` 月份参数实际探测：收支列表、月度汇总和预算接口均返回 422；输入上限数量与价格的持仓创建未触发服务器错误。
 
 环境存在一项 Starlette 对测试客户端 `httpx` 的弃用警告，不影响本轮测试结果。此处结果仅覆盖 API；页面视觉、浏览器交互和 Docker 结果见下节。
 
 ## 浏览器与视觉验收
 
-由主代理补充实际执行命令、桌面/移动视口、已验证流程、截图位置及未覆盖项。自动化使用独立临时数据库与固定汇率。
+2026-11-18 执行 `.venv-e2e/bin/python scripts/e2e.py`，**13 组检查通过**。脚本自动启动前后端，使用临时数据库、固定汇率与固定业务日期，结束后清理测试进程和数据库。
+
+- 浏览器真实操作验证：USD 收入双币显示、支出编辑、月份与类型筛选、周期规则创建/暂停/恢复/刷新幂等、预算超额、两币种目标存入与历史、资产新增/编辑/删除确认、心愿实付购买生成支出、投资含费买入/加仓/卖出/改价、Dashboard 与同日净值联动。
+- 在 1440×1000 和 390×844 两种视口分别检查全部七页，未发现整页水平溢出；投资等宽表在独立区域内横向滚动，并提供手机滑动提示。
+- 验证手机菜单、必填输入校验、弹窗 Tab 焦点循环和 Escape 关闭。
+- 主动模拟 `/api/assets` 返回 503，确认错误提示与重新加载后的恢复。这是预期失败场景；正常业务流程无浏览器脚本或控制台错误。
+- 查看桌面和手机总览、手机表单等代表性截图，修复了手机结余负号换行、首页交易金额隐藏及次要文本对比度问题。字体使用本地回退，无远程字体依赖。
+
+截图与结果：`output/e2e/`，其中 `results.json` 保存执行结果，`dashboard-1440.png`、`dashboard-390.png`、`asset-form-mobile.png` 保存代表性视图。均为隔离验收数据，不是用户账户数据，文件不入 Git。
+
+浏览器验证使用 Chromium；未对 Safari、Firefox 或真机浏览器声明兼容性验收。
 
 ## Docker 与持久化验收
 
-由主代理补充镜像构建、Compose 启动、端口访问及重启后数据保留的实际结果；运行条件不足时明确记录限制。
+2026-11-18：前后端镜像均构建成功。运行 `python3 scripts/docker_smoke.py`，以下检查全部通过：
+
+- Compose 前后端健康检查通过。
+- Nginx 首页与 `/investments` 深链接正确返回 SPA，`/api/health` 通过反向代理返回正常状态。
+- 在独立测试项目中创建人民币资产 `12,345.67`，重启后端容器后 ID、余额和净资产快照保持不变。
+- 验收结束后删除该独立测试项目及其数据卷，日常应用数据不受影响。
+
+结果文件为 `output/docker-smoke.json`。生产服务按 `docker compose up -d` 启动，默认地址为 `http://localhost:8080`；后端为单 worker，SQLite 数据保存在 `fft_data` 命名卷。
+
+进一步执行 `.venv-e2e/bin/python scripts/docker_smoke.py --browser`，生产前端镜像中的 **13 组浏览器流程全部通过**，并再次验证重启持久化。仅独立验收后端注入固定日期和汇率，应用业务代码与日常镜像相同。结果和截图位于 `output/docker-e2e/`。
+
+生产验收发现并修复 `/assets` 业务路由与默认静态目录重名的问题：构建产物现放在 `/static/`，Nginx 资源缓存规则同步调整；`/assets` 及其他页面深链接均可直接访问。
+
+本机 8080 已被其他服务占用，本轮创建了不入 Git 的 `.env`，使用 **http://localhost:8081**。日常前后端容器均健康，应用初始为空数据，测试记录留在已清理的隔离数据卷中。
+
+## 依赖审计记录
+
+2026-11-18，`npm audit` 报告 6 个包级告警：4 high、2 moderate。保留 React 18 与施工方案中的 Router 6，未使用强制跨主版本升级。
+
+- 4 个 high 来自同一条 `picomatch → fdir/tinyglobby → vite` 构建工具链，公告 [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) 指出恶意 glob 可触发 ReDoS，当前公告无修复版本。生产 Nginx 镜像仅包含构建后的静态文件，不包含该 Node.js 构建工具链。开发/构建环境仍需跟踪上游修复。
+- 2 个 moderate 对应 `react-router` 与 `react-router-dom` 的 [不可信跳转地址](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6) 和 [SSR hydration](https://github.com/advisories/GHSA-337j-9hxr-rhxg) 公告，修复版本为 Router 7.18.0。根据本项目代码，当前为客户端 SPA、无 SSR，路由链接均为固定内部路径；这缩小了触发面，不等于依赖告警已修复。后续引入动态路由跳转或 SSR 前须处理对应依赖升级。
